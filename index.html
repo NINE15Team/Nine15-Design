@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cow Shares Mobile Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #232323;
+    --muted: #4a4640;
+    --soft: #5f5a52;
+    --cream: #f2ede9;
+    --line: #e4ded6;
+    --line-strong: #d6cfc5;
+    --gold: #c5a46d;
+    --page: #faf8f5;
+    --serif: "New York", "Iowan Old Style", Baskerville, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Jost, system-ui, sans-serif; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .layout { max-width: 1240px; margin: 0 auto; padding: 48px 24px 64px; display: flex; gap: 56px; align-items: flex-start; justify-content: center; }
+  .device-wrap { flex: none; width: 390px; position: sticky; top: 24px; }
+  .device { width: 100%; min-width: 0; background: #fff; border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(35,35,35,0.12); }
+  .device-label { font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); text-align: center; margin: 0 0 12px; }
+
+  /* Section prototype */
+  .cuts { padding: 36px 16px 40px; display: flex; flex-direction: column; gap: 24px; overflow: hidden; }
+  .cuts__head { text-align: center; display: flex; flex-direction: column; gap: 10px; padding: 0 8px; }
+  .eyebrow { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--soft); }
+  .cuts__title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.15; letter-spacing: 0.04em; text-transform: uppercase; }
+  .cuts__intro { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+
+  .stage { position: relative; width: 100%; aspect-ratio: 920 / 600; background: var(--cream); overflow: hidden; }
+  .stage img { position: absolute; width: 130.4348%; left: -19.5652%; top: -13.3333%; height: auto; display: block; pointer-events: none; }
+  .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .stage polygon { fill: var(--gold); fill-opacity: 0; stroke: none; transition: fill-opacity 0.25s ease; }
+  .stage polygon.is-active { fill-opacity: 0.55; stroke: var(--gold); stroke-width: 5; stroke-linejoin: round; }
+  .pin { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; padding: 0; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .pin span { display: block; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 6px solid var(--gold); box-shadow: 0 1px 4px rgba(0,0,0,0.4); transition: all 0.2s ease; }
+  .pin[aria-pressed="true"] span { width: 28px; height: 28px; border-width: 9px; box-shadow: 0 0 0 5px rgba(255,255,255,0.35), 0 1px 6px rgba(0,0,0,0.4); }
+  .selected-note { margin: 10px 0 0; font-size: 13px; color: var(--soft); text-align: center; }
+  .selected-note strong { color: var(--ink); font-weight: 600; }
+
+  .rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; margin: 0 -16px; padding: 2px 16px; scroll-padding-left: 16px; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .tile { flex: 0 0 auto; scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 132px; padding: 14px 16px; border-radius: 14px; background: var(--cream); border: 1.5px solid #e9e2d8; cursor: pointer; text-align: left; transition: background 0.15s ease, border-color 0.15s ease; }
+  .tile__name { font-size: 15px; font-weight: 500; line-height: 1.2; white-space: nowrap; }
+  .tile svg { width: 22px; height: 22px; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tile .i-check { display: none; stroke: var(--ink); }
+  .tile .i-plus { stroke: #8a847b; }
+  .tile[aria-pressed="true"] { background: #fff; border-color: var(--ink); }
+  .tile[aria-pressed="true"] .i-check { display: block; }
+  .tile[aria-pressed="true"] .i-plus { display: none; }
+  .tile:active { transform: scale(0.98); }
+
+  .panel { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--line); padding-top: 22px; }
+  .panel__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .panel__name { margin: 6px 0 0; font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.15; letter-spacing: 0.03em; text-transform: uppercase; }
+  .arrows { display: flex; gap: 6px; flex: none; }
+  .arrow { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; background: #fff; border: 1px solid var(--line-strong); color: var(--ink); }
+  .arrow--next { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .panel__blurb { margin: 0; font-size: 15px; line-height: 1.45; color: var(--muted); }
+  .panel__list { margin: 0; font-size: 17px; line-height: 1.45; }
+  .panel__meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--soft); }
+  .panel__meta p { margin: 0; }
+
+  .cards { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scroll-padding-left: 16px; scrollbar-width: none; }
+  .cards::-webkit-scrollbar { display: none; }
+  .card { flex: 0 0 220px; scroll-snap-align: start; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); }
+  .card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--cream); }
+  .card__body { display: flex; flex-direction: column; gap: 6px; padding: 12px 12px 0; flex: 1; }
+  .card__title { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.3; min-height: 39px; }
+  .card__price { margin: 0; font-size: 15px; }
+  .card__btn { margin: 12px; height: 44px; background: var(--ink); color: #fff; border: 0; font-size: 13px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+
+  /* Explainer */
+  .explain { flex: 1 1 560px; min-width: 0; max-width: 680px; display: flex; flex-direction: column; gap: 32px; padding-top: 28px; }
+  .explain h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 38px; line-height: 1.1; letter-spacing: 0.03em; text-transform: uppercase; }
+  .lead { margin: 12px 0 0; font-size: 17px; line-height: 1.55; color: var(--muted); }
+  .steps { display: flex; flex-direction: column; gap: 22px; margin: 0; padding: 0; list-style: none; }
+  .step { display: flex; gap: 16px; }
+  .step__n { flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .step h2 { margin: 4px 0 6px; font-size: 18px; font-weight: 600; }
+  .step p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--muted); }
+  .box { padding: 24px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--line); background: #fff; }
+  .box--cream { background: var(--cream); border-color: var(--cream); }
+  .box h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+  .box p, .box li { margin: 0; font-size: 14px; line-height: 1.5; }
+  .box ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .box .fine { font-size: 13px; color: var(--soft); }
+  .areas { display: flex; flex-direction: column; gap: 8px; }
+
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; align-items: center; padding: 24px 0 48px; gap: 40px; }
+    .device-wrap { position: static; width: 100%; max-width: 430px; }
+    .device { max-width: none; box-shadow: none; border-left: 0; border-right: 0; }
+    .explain { padding: 0 16px; }
+    .explain h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<main class="layout">
+  <div class="device-wrap">
+    <p class="device-label">Mobile prototype · tap to try</p>
+    <section class="device" aria-label="Mobile prototype">
+      <div class="cuts" id="cuts">
+        <div class="cuts__head">
+          <p class="eyebrow">Cow Shares</p>
+          <h2 class="cuts__title">Looking for a specific cut?</h2>
+          <p class="cuts__intro">Tap the cow, or pick an area below, to see every cut it yields.</p>
+        </div>
+
+        <div>
+          <div class="stage" id="stage">
+            <img src="https://www.primewagyufarm.com/cdn/shop/files/cowanatomy1.png?width=1200" alt="Illustration of a Wagyu steer divided into primal cuts" width="1200" height="800">
+            <svg viewBox="180 80 920 600" preserveAspectRatio="none" aria-hidden="true" id="regions"></svg>
+          </div>
+          <p class="selected-note">Selected: <strong id="selName"></strong></p>
+        </div>
+
+        <div class="rail" role="group" aria-label="Cut areas" id="tiles"></div>
+
+        <div class="panel" id="panel">
+          <div class="panel__top">
+            <div>
+              <p class="eyebrow">Cut area</p>
+              <h3 class="panel__name" id="pName"></h3>
+            </div>
+            <div class="arrows">
+              <button class="arrow" type="button" id="prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+              <button class="arrow arrow--next" type="button" id="next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+            </div>
+          </div>
+          <p class="panel__blurb" id="pBlurb"></p>
+          <p class="panel__list" id="pList"></p>
+          <div class="panel__meta"><p id="pCount"></p><p>Swipe to see more</p></div>
+          <div class="cards" id="cards" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <article class="explain">
+    <header>
+      <p class="eyebrow">Prime Wagyu Farm · Cow Shares · Mobile only</p>
+      <h1>How the mobile experience works</h1>
+      <p class="lead">Today on phones, the cow shows 21 small dots and each tap jumps straight into a product pop-up. The new version groups the cuts into 7 areas that are easy to tap. Customers can then look through every cut in an area before choosing one.</p>
+    </header>
+
+    <ol class="steps">
+      <li class="step"><span class="step__n">1</span><div><h2>See the whole animal</h2><p>The cow illustration runs full width on a cream panel, cropped to fill the screen. It carries 7 gold markers, one per area, in the same style as the desktop hotspots. They replace the 21 tiny dots.</p></div></li>
+      <li class="step"><span class="step__n">2</span><div><h2>Tap the cow, or tap a name</h2><p>Every marker is a full-size touch target. Below the cow, the same areas appear as rounded, labelled tiles in a single row you can swipe, so they take up one line instead of a tall grid. The chosen area turns gold on the cow, and its tile turns white with a check mark.</p></div></li>
+      <li class="step"><span class="step__n">3</span><div><h2>Browse that area's cuts</h2><p>The panel below changes to show the area name, a one-line description and its cuts. Under that is a row of product cards you can swipe, each with photo, name, price and Quick add. Quick add opens the same pop-up the site already uses.</p></div></li>
+      <li class="step"><span class="step__n">4</span><div><h2>Keep exploring without scrolling back up</h2><p>Arrow buttons step to the next or previous area. The cards scroll sideways, so the section stays the same height and the page doesn't jump when the area changes.</p></div></li>
+    </ol>
+
+    <div class="box box--cream">
+      <h2>The 7 areas (for approval)</h2>
+      <div class="areas" id="areaList"></div>
+      <p class="fine">All 22 products already on the desktop cow appear here, with the same names, photos and prices. The area descriptions are draft copy for you to confirm.</p>
+    </div>
+
+    <div class="box">
+      <h2>What stays the same</h2>
+      <ul>
+        <li>The desktop cow and its hover pop-ups are unchanged.</li>
+        <li>Same illustration, products, prices and Quick add flow.</li>
+        <li>Brand type, charcoal and gold palette. Buttons and product cards keep the site's square corners.</li>
+        <li>The new layout applies on phones only (below 750px wide).</li>
+      </ul>
+    </div>
+
+    <div class="box">
+      <h2>Notes for review</h2>
+      <ul>
+        <li>Rib opens first by default. Any area can be the default instead.</li>
+        <li>Sold-out cuts would show the site's existing "Sold out" label in place of Quick add.</li>
+        <li>This is a concept preview. Quick add and product links are not live here.</li>
+      </ul>
+    </div>
+  </article>
+</main>
+
+<script>
+(function () {
+  var CDN = 'https://www.primewagyufarm.com/cdn/shop/files/';
+  function img(f) { return CDN + f + '?width=480'; }
+  var AREAS = [
+    { id: 'round', name: 'Round', x: 280, y: 300,
+      points: '262,138 352,145 350,380 345,432 300,470 262,540 228,470 210,300 222,175',
+      blurb: 'Lean, hard-working muscle that rewards low and slow roasting.',
+      products: [
+        ['Wagyu Rump Roast', 'Rump Roast', '$75.00', 'Rump-Roast_on_Slate.png'],
+        ['Wagyu Eye of Round Roast', 'Eye of Round', '$105.00', 'Eye_of_Round_Roast_on_Wood_1.png']
+      ] },
+    { id: 'sirloin', name: 'Sirloin', x: 405, y: 262,
+      points: '352,145 472,152 457,374 350,380',
+      blurb: 'Bold, beefy steaks plus the prized picanha cap.',
+      products: [
+        ['Wagyu Top Sirloin Steak (Baseball Cut)', 'Top Sirloin', '$20.00', 'Sirloin_Baseball_on_slate_closeup.png'],
+        ['Wagyu Tri-Tip Roast', 'Tri-Tip', '$80.00', 'Tri_Tip_on_Slate_1.png'],
+        ['Wagyu Coulotte (Picanha) Roast', 'Picanha Roast', '$110.00', 'ecbf8e2a-104c-47ce-a49f-4640774ba742.png'],
+        ['Wagyu Coulotte (Picanha) Steak', 'Picanha Steak', '$33.00', 'Coulette-Steak_on_Slate.png']
+      ] },
+    { id: 'shortloin', name: 'Short Loin', x: 518, y: 262,
+      points: '472,152 582,157 572,362 457,374',
+      blurb: 'The most tender steaks on the animal.',
+      products: [
+        ['Wagyu New York Strip Steak', 'NY Strip', '$80.00', 'NYStrip_on_slate_board.png'],
+        ['Wagyu Filet Mignon Steak', 'Filet Mignon', '$75.00', 'Filet_on_Slate.png']
+      ] },
+    { id: 'rib', name: 'Rib', x: 648, y: 262,
+      points: '582,157 722,165 710,357 572,362',
+      blurb: 'Rich marbling and deep, buttery flavor.',
+      products: [
+        ['Wagyu Ribeye Steak', 'Ribeye', '$69.00', 'IMG-6630.jpg'],
+        ['Wagyu Beef Back Ribs', 'Back Ribs', '$49.00', 'Beef_Ribs_on_Slate.png']
+      ] },
+    { id: 'chuck', name: 'Chuck', x: 805, y: 255,
+      points: '722,165 895,155 902,310 872,364 710,357',
+      blurb: 'Butcher favorites with big flavor and great value.',
+      products: [
+        ['Wagyu Chuck Roast Boneless', 'Chuck Roast', '$82.00', 'Chuck_Roast_on_slate.png'],
+        ['Wagyu Chuck Eye Steak', 'Chuck Eye', '$36.00', 'Chuck_Eye_Steak_on_Slate.png'],
+        ['Wagyu Flat Iron Steak', 'Flat Iron', '$30.00', 'FlatIron_Raw_16-600px.jpg'],
+        ['Wagyu Denver Steak', 'Denver', '$30.00', 'Denver_on_Slate_with_knife.png']
+      ] },
+    { id: 'flank', name: 'Plate & Flank', x: 520, y: 425,
+      points: '350,380 702,364 684,474 600,470 520,478 440,470 380,446 345,432',
+      blurb: 'Fast-cooking, full-flavored steaks for the grill.',
+      products: [
+        ['Wagyu Beef Short Ribs - Bone In', 'Short Ribs', '$210.00', '2ceae592-b57a-4d43-ab96-40e9e163a70f.png'],
+        ['Wagyu Hanger Steak', 'Hanger', '$19.00', 'Hanger600px.jpg'],
+        ['Wagyu Outside Skirt Steak', 'Outside Skirt', '$19.00', 'Outside_Skirt_Steak_on_Slate_1.png'],
+        ['Wagyu Inside Skirt Steak', 'Inside Skirt', '$18.00', 'Inside_Skirt_Steak_1.png'],
+        ['Wagyu Flank Steak', 'Flank', '$19.00', 'Flank_Steak_on_Slate.png'],
+        ['Wagyu Bavette Steak', 'Bavette', '$22.00', 'Flap-Steak_on_Slate.png']
+      ] },
+    { id: 'brisket', name: 'Brisket & Shank', x: 778, y: 430,
+      points: '702,364 872,364 862,440 805,470 800,545 692,545 684,474',
+      blurb: 'Made for smoking, braising and slow Sundays.',
+      products: [
+        ['Wagyu Brisket Flat', 'Brisket Flat', '$140.00', 'Brisket_Flat_Front.png'],
+        ['Wagyu Osso Buco (Cross-Cut Shank Slices)', 'Osso Buco', '$30.00', 'Osso_Bucco_on_Slate_2.png']
+      ] }
+  ];
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var regions = document.getElementById('regions');
+  var stage = document.getElementById('stage');
+  var tiles = document.getElementById('tiles');
+  var cards = document.getElementById('cards');
+  var current = 3;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  var ICONS = '<svg class="i-plus" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 8v8M8 12h8"/></svg>' +
+              '<svg class="i-check" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M8 12.4l2.7 2.6L16 9.6"/></svg>';
+
+  AREAS.forEach(function (a, i) {
+    var poly = document.createElementNS(SVGNS, 'polygon');
+    poly.setAttribute('points', a.points);
+    regions.appendChild(poly);
+    a.poly = poly;
+
+    var pin = el('button', 'pin');
+    pin.type = 'button';
+    pin.setAttribute('aria-label', 'Show ' + a.name + ' cuts');
+    pin.style.left = ((a.x - 180) / 920 * 100) + '%';
+    pin.style.top = ((a.y - 80) / 600 * 100) + '%';
+    pin.appendChild(el('span'));
+    pin.addEventListener('click', function () { select(i, true); });
+    stage.appendChild(pin);
+    a.pin = pin;
+
+    var tile = el('button', 'tile');
+    tile.type = 'button';
+    tile.appendChild(el('span', 'tile__name', a.name));
+    tile.insertAdjacentHTML('beforeend', ICONS);
+    tile.addEventListener('click', function () { select(i, false); });
+    tiles.appendChild(tile);
+    a.tile = tile;
+
+    var row = el('p');
+    var b = el('strong', null, a.name);
+    b.style.fontWeight = '600';
+    row.appendChild(b);
+    row.appendChild(document.createTextNode(': ' + a.products.map(function (p) { return p[1]; }).join(', ')));
+    document.getElementById('areaList').appendChild(row);
+  });
+
+  function select(i, fromCow) {
+    current = (i + AREAS.length) % AREAS.length;
+    var a = AREAS[current];
+    AREAS.forEach(function (o, j) {
+      var on = j === current;
+      o.poly.classList.toggle('is-active', on);
+      o.pin.setAttribute('aria-pressed', on ? 'true' : 'false');
+      o.tile.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.getElementById('selName').textContent = a.name;
+    document.getElementById('pName').textContent = a.name;
+    document.getElementById('pBlurb').textContent = a.blurb;
+    document.getElementById('pList').textContent = a.products.map(function (p) { return p[1]; }).join(' · ');
+    var n = a.products.length;
+    document.getElementById('pCount').textContent = n + (n === 1 ? ' cut' : ' cuts') + ' available';
+    var prevA = AREAS[(current - 1 + AREAS.length) % AREAS.length];
+    var nextA = AREAS[(current + 1) % AREAS.length];
+    document.getElementById('prev').setAttribute('aria-label', 'Previous area: ' + prevA.name);
+    document.getElementById('next').setAttribute('aria-label', 'Next area: ' + nextA.name);
+
+    cards.textContent = '';
+    a.products.forEach(function (p) {
+      var c = el('div', 'card');
+      var im = el('img');
+      im.src = img(p[3]);
+      im.alt = p[0];
+      im.loading = 'lazy';
+      im.width = 480; im.height = 360;
+      c.appendChild(im);
+      var body = el('div', 'card__body');
+      body.appendChild(el('p', 'card__title', p[0]));
+      body.appendChild(el('p', 'card__price', p[2]));
+      c.appendChild(body);
+      var btn = el('button', 'card__btn', 'Quick add');
+      btn.type = 'button';
+      c.appendChild(btn);
+      cards.appendChild(c);
+    });
+    cards.scrollLeft = 0;
+
+    var tileEl = a.tile;
+    var left = tileEl.offsetLeft - 16;
+    tiles.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+
+    if (fromCow) {
+      var panel = document.getElementById('panel');
+      var r = panel.getBoundingClientRect();
+      if (r.top > window.innerHeight - 120) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  document.getElementById('prev').addEventListener('click', function () { select(current - 1, false); });
+  document.getElementById('next').addEventListener('click', function () { select(current + 1, false); });
+  select(current, false);
+})();
+</script>
+</body>
+</html>
